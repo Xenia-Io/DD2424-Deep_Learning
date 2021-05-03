@@ -10,12 +10,11 @@ KTH Royal Institute of Technology
 
 __author__ = "Xenia Ioannidou"
 
-import sys
-import numpy as np
-import matplotlib.pyplot as plt
-import random
 from collections import OrderedDict
-import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import random
+import sys
 
 
 class DataLoader():
@@ -60,7 +59,7 @@ class DataLoader():
 
 
 class RNN():
-    """A vanilla recurrent neural network model"""
+    """A vanilla RNN model"""
 
     def __init__(self, data, m=100, eta=0.1, seq_length=25, sigma=0.01):
         """ Build the RNN model
@@ -77,12 +76,35 @@ class RNN():
         """
         self.m, self.eta, self.seq_length = m, eta, seq_length
         self.vocab_len = data['vocab_len']
-        b = np.zeros((m, 1))
-        c = np.zeros((self.vocab_len, 1))
+        self.b = np.zeros((m, 1))
+        self.c = np.zeros((self.vocab_len, 1))
 
-        U = np.random.normal(0, sigma, size=(m, self.vocab_len))
-        W = np.random.normal(0, sigma, size=(m, m))
-        V = np.random.normal(0, sigma, size=(self.vocab_len, m))
+        self.U = np.random.normal(0, sigma, size=(m, self.vocab_len))
+        self.W = np.random.normal(0, sigma, size=(m, m))
+        self.V = np.random.normal(0, sigma, size=(self.vocab_len, m))
+
+
+    def compute_softmax(self, x):
+        e = x - np.max(x)
+        return np.exp(e) / np.sum(np.exp(e), axis=0)
+
+    def evaluate_classifier(self, h, x):
+        """ Evaluate the classifier
+        Args:
+            h (np.ndarray): hidden state sequence
+            x (np.ndarray): sequence of input vectors
+        Returns:
+            a (np.ndarray): linear transformation of W and U + bias b
+            h (np.ndarray): tanh activation of a
+            o (np.ndarray): linear transformation of V + bias c
+            p (np.ndarray): softmax activation of o
+        """
+        a = np.dot(self.W, h) + np.dot(self.U, x) + self.b
+        h = np.tanh(a)
+        o = np.dot(self.V, h) + self.c
+        p = self.compute_softmax(o)
+
+        return a, h, o, p
 
 
 if __name__ == '__main__':
